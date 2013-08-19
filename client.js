@@ -1,5 +1,6 @@
 var net = require('net');
 
+var HOST='';
 var PORTS=20;
 var CLIENTS=50000;
 
@@ -11,14 +12,19 @@ function connect() {
     connected++;
 }
 
+function disconnect() {
+    connected--;
+}
+
 setInterval(function() {
     console.log("%d connected", connected);
 }, 2500);
 
-for(var i=0; i < PORTS; i++) {
-    console.log("%d connected", i * CLIENTS);
-    for(var j=0; j < CLIENTS; j++) {
-        net.connect({port: 9000 + i}, connect);
-    }
+function startConnections(clients) {
+    var port = 9000 + (clients % PORTS);
+    var c = net.connect({host: HOST, port: port}, connect);
+    c.on('end', disconnect); 
+    setTimeout(startConnections, 1, clients - 1);
 }
 
+startConnections(CLIENTS);
